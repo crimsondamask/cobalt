@@ -1,5 +1,5 @@
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use futures_util::StreamExt;
 use rseip::client::ab_eip::*;
 use rseip::precludes::*;
@@ -15,22 +15,46 @@ struct Args {
     #[arg(short, long)]
     address: String,
 
-    /// Controller tag to read.
-    #[arg(short, long)]
-    tag: Option<String>,
-
-    /// Value to write into the specified tag.
-    #[arg(short, long)]
-    value: Option<f32>,
+    /// Tag value type.
+    // #[arg(value_enum)]
+    // tag_type: Option<TagType>,
 
     #[command(subcommand)]
     command: Option<Commands>,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
+enum TagType {
+    Bool,
+    Int,
+    Dint,
+    Real,
 }
 
 #[derive(Subcommand)]
 enum Commands {
     /// List controller tags.
     List,
+    /// Read the INT value of a tag.
+    ReadInt {
+        tag: String,
+    },
+    /// Read the DINT value of a tag.
+    ReadDint {
+        tag: String,
+    },
+    /// Read the REAL value of a tag.
+    ReadReal {
+        tag: String,
+    },
+    /// Read the BOOL value of a tag.
+    ReadBool {
+        tag: String,
+    },
+    Write {
+        tag: String,
+        tag_type: TagType,
+    },
 }
 
 #[tokio::main]
@@ -49,31 +73,45 @@ pub async fn main() -> Result<()> {
             stream
                 .for_each(|item| async move {
                     if let Ok(item) = item {
-                        println!("{:?}", item.symbol_type);
-                        println!("=====>     {:?}", item);
+                        println!("    {}    {:?}", item.name, item.symbol_type);
                     }
                 })
                 .await;
         }
+        Some(Commands::ReadInt { tag }) => {
+            let tag = EPath::parse_tag(tag)?;
+            let tag_value: TagValue<i16> = client.read_tag(tag.clone()).await?;
+            println!(
+                "Tag type:    {:?}    Tag value:    {}",
+                &tag_value.tag_type, &tag_value.value
+            );
+        }
+        Some(Commands::ReadDint { tag }) => {
+            let tag = EPath::parse_tag(tag)?;
+            let tag_value: TagValue<i32> = client.read_tag(tag.clone()).await?;
+            println!(
+                "Tag type:    {:?}    Tag value:    {}",
+                &tag_value.tag_type, &tag_value.value
+            );
+        }
+        Some(Commands::ReadReal { tag }) => {
+            let tag = EPath::parse_tag(tag)?;
+            let tag_value: TagValue<f32> = client.read_tag(tag.clone()).await?;
+            println!(
+                "Tag type:    {:?}    Tag value:    {}",
+                &tag_value.tag_type, &tag_value.value
+            );
+        }
+        Some(Commands::ReadBool { tag }) => {
+            let tag = EPath::parse_tag(tag)?;
+            let tag_value: TagValue<bool> = client.read_tag(tag.clone()).await?;
+            println!(
+                "Tag type:    {:?}    Tag value:    {}",
+                &tag_value.tag_type, &tag_value.value
+            );
+        }
+        Some(_) => {}
         None => {}
-    }
-
-    if let Some(tag) = cli.tag.as_deref() {
-        let tag = EPath::parse_tag(tag)?;
-        println!("reading tag...");
-        let value: TagValue<f32> = client.read_tag(tag.clone()).await?;
-        println!(
-            "Tag type: {:?}. Tag value: {:?}",
-            &value.tag_type, &value.value
-        );
-    }
-
-    if let (Some(value), Some(tag)) = (cli.value, cli.tag.as_deref()) {
-        let tag = EPath::parse_tag(tag)?;
-        let mut tag_value: TagValue<f32> = client.read_tag(tag.clone()).await?;
-        tag_value.value = value;
-        client.write_tag(tag, &tag_value).await?;
-        println!("Tag written:    value:    {}", &tag_value.value);
     }
 
     client.close().await?;
