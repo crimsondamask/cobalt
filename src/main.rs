@@ -8,9 +8,6 @@ use rseip::client::ab_eip::*;
 use rseip::precludes::*;
 
 #[derive(Parser)]
-#[command(name = "Cobalt")]
-#[command(author = "Abdelkader Madoui. <abdelkadermadoui@protonmail.com>")]
-#[command(version = "1.0")]
 #[command(
     about = "A command line utility for parsing and reading tags on Allen Bradley CompactLogix PLCs.",
     long_about = "Cobalt is an open source utility for communicating with Allen Bradley PLCs. That includes reading and writing tag values and listing controller tags."
