@@ -1,5 +1,7 @@
+use std::fmt::Display;
+
 use anyhow::Result;
-use clap::{Parser, Subcommand};
+use clap::{Parser, Subcommand, ValueEnum};
 use colored::*;
 use futures_util::StreamExt;
 use rseip::client::ab_eip::*;
@@ -29,24 +31,40 @@ enum Commands {
     /// List controller tags.
     List,
     /// Read the INT value of a tag.
-    ReadInt {
-        /// Controller tag to read.
-        tag: String,
-    },
+    ReadInt { tag: String },
     /// Read the DINT value of a tag.
     ReadDint { tag: String },
     /// Read the REAL value of a tag.
     ReadReal { tag: String },
     /// Read the BOOL value of a tag.
     ReadBool { tag: String },
+    /// Write a BOOL value to the specified tag.
+    WriteBool { tag: String, value: BoolValue },
     /// Write an INT value to the specified tag.
     WriteInt { tag: String, value: i16 },
     /// Write a DINT value to the specified tag.
     WriteDint { tag: String, value: i32 },
     /// Write a REAL value to the specified tag.
     WriteReal { tag: String, value: f32 },
-    /// Write a BOOL value to the specified tag.
-    WriteBool { tag: String, value: bool },
+}
+
+#[derive(Clone, Subcommand, ValueEnum)]
+enum BoolValue {
+    False,
+    True,
+}
+
+impl Display for BoolValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BoolValue::False => {
+                write!(f, "false")
+            }
+            BoolValue::True => {
+                write!(f, "true")
+            }
+        }
+    }
 }
 
 #[cfg(not(windows))]
@@ -133,23 +151,40 @@ pub async fn main() -> Result<()> {
                 &tag_value.value.to_string().bold().green(),
             );
         }
+        Commands::WriteBool { tag, value } => {
+            let tag = EPath::parse_tag(tag)?;
+
+            match value {
+                BoolValue::False => {
+                    let tag_value = TagValue {
+                        tag_type: TagType::Bool,
+                        value: false,
+                    };
+                    client.write_tag(tag, &tag_value).await.unwrap();
+                    println!(
+                        "Tag type:    {:?}    Tag value:    {}",
+                        &tag_value.tag_type,
+                        &tag_value.value.to_string().bold().green(),
+                    );
+                }
+                BoolValue::True => {
+                    let tag_value = TagValue {
+                        tag_type: TagType::Bool,
+                        value: true,
+                    };
+                    client.write_tag(tag, &tag_value).await.unwrap();
+                    println!(
+                        "Tag type:    {:?}    Tag value:    {}",
+                        &tag_value.tag_type,
+                        &tag_value.value.to_string().bold().green(),
+                    );
+                }
+            }
+        }
         Commands::WriteReal { tag, value } => {
             let tag = EPath::parse_tag(tag)?;
             let tag_value = TagValue {
                 tag_type: TagType::Real,
-                value: *value,
-            };
-            client.write_tag(tag, &tag_value).await.unwrap();
-            println!(
-                "Tag type:    {:?}    Tag value:    {}",
-                &tag_value.tag_type,
-                &tag_value.value.to_string().bold().green(),
-            );
-        }
-        Commands::WriteBool { tag, value } => {
-            let tag = EPath::parse_tag(tag)?;
-            let tag_value = TagValue {
-                tag_type: TagType::Bool,
                 value: *value,
             };
             client.write_tag(tag, &tag_value).await.unwrap();
@@ -224,6 +259,36 @@ pub async fn main() -> Result<()> {
                 &tag_value.value.to_string().bold().green(),
             );
         }
+        Commands::WriteBool { tag, value } => {
+            let tag = EPath::parse_tag(tag)?;
+
+            match value {
+                BoolValue::False => {
+                    let tag_value = TagValue {
+                        tag_type: TagType::Bool,
+                        value: false,
+                    };
+                    client.write_tag(tag, &tag_value).await.unwrap();
+                    println!(
+                        "Tag type:    {:?}    Tag value:    {}",
+                        &tag_value.tag_type,
+                        &tag_value.value.to_string().bold().green(),
+                    );
+                }
+                BoolValue::True => {
+                    let tag_value = TagValue {
+                        tag_type: TagType::Bool,
+                        value: true,
+                    };
+                    client.write_tag(tag, &tag_value).await.unwrap();
+                    println!(
+                        "Tag type:    {:?}    Tag value:    {}",
+                        &tag_value.tag_type,
+                        &tag_value.value.to_string().bold().green(),
+                    );
+                }
+            }
+        }
         Commands::WriteInt { tag, value } => {
             let tag = EPath::parse_tag(tag)?;
             let tag_value = TagValue {
@@ -254,19 +319,6 @@ pub async fn main() -> Result<()> {
             let tag = EPath::parse_tag(tag)?;
             let tag_value = TagValue {
                 tag_type: TagType::Real,
-                value: *value,
-            };
-            client.write_tag(tag, &tag_value).await.unwrap();
-            println!(
-                "Tag type:    {:?}    Tag value:    {}",
-                &tag_value.tag_type,
-                &tag_value.value.to_string().bold().green(),
-            );
-        }
-        Commands::WriteBool { tag, value } => {
-            let tag = EPath::parse_tag(tag)?;
-            let tag_value = TagValue {
-                tag_type: TagType::Bool,
                 value: *value,
             };
             client.write_tag(tag, &tag_value).await.unwrap();

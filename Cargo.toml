@@ -9,6 +9,7 @@ edition = "2021"
 [dependencies]
 anyhow = "1.0.66"
 clap = { version = "4.0.22", features = ["derive"] }
+colored = "2.0.0"
 futures-util = { version = "0.3.25", features = ["sink"] }
 rseip = { path = "./eip-rs" }
 tokio = { version = "1.21.2", features = ["rt-multi-thread"] }
