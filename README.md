@@ -2,7 +2,7 @@
 
 > **Allen Bradley Ethernet/IP Command Line Utility**
 
-[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE-MIT)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 [![Contributors](https://img.shields.io/apm/l/cobalt)](https://github.com/crimsondamask/cobalt/graphs/contributors)
 
 ## About
