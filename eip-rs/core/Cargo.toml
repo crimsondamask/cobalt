@@ -1,0 +1,24 @@
+[package]
+name = "rseip-core"
+version = "0.1.3"
+edition = "2021"
+description = "core module for rseip"
+license = "MIT"
+homepage = "https://github.com/Joylei/eip-rs"
+repository = "https://github.com/Joylei/eip-rs.git"
+documentation = "https://docs.rs/crate/rseip-core/"
+keywords = ["ethernet", "codec", "industry", "eip", "cip"]
+categories = ["asynchronous", "hardware-support"]
+authors = ["joylei <leingliu@gmail.com>"]
+resolver = "2"
+
+[dependencies]
+inlinable_string = { version = "^0.1.14", optional = true }
+bytes = "1"
+byteorder = { version = "1", optional = true }
+smallvec = "1"
+
+[features]
+default = ["feat-inlinable-string", "cip"]
+feat-inlinable-string = ["inlinable_string"]
+cip = ["byteorder"]
