@@ -8,9 +8,13 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+aga8 = "0.3.0"
 anyhow = "1.0.66"
+chrono = "0.4.24"
 clap = { version = "4.0.22", features = ["derive"] }
 colored = "2.0.0"
 futures-util = { version = "0.3.25", features = ["sink"] }
 rseip = { path = "./eip-rs" }
 tokio = { version = "1.21.2", features = ["rt-multi-thread"] }
+tokio-modbus = { version = "0.7.1", default-features = false, features = ["rtu"] }
+tokio-serial = "5.4.4"
